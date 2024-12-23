@@ -31,7 +31,7 @@
 (defmacro elapsed
   ``Macro that evaluates `form` and prints the execution time.
 
-    When repeated evaluations are run using the `:times` argument,
+    When repeated evaluations are run using the `:times` argument
     this macro prints the mean, standard deviation, and inter-quartile
     range of the samples.
 
@@ -43,7 +43,8 @@
   [form &named times warmup]
   (default times '1)
   (default warmup '1)
-  ~(let [result (time-thunk (thunk ,form) ,times ,warmup)]
-     (when (neg? (result :mean))
+  (def $res (gensym))
+  ~(let [,$res (,time-thunk (,thunk ,form) ,times ,warmup)]
+     (when (neg? (,$res :mean))
        (eprint "Warning: overhead execution greater than benchmark. Try increasing :times argument."))
-     (print (process-result result))))
+     (print (,process-result ,$res))))
