@@ -1,8 +1,5 @@
 (import timing/native)
 
-(defmacro- thunk [& body]
-  ~(fn [] ,;body))
-
 (defn- time-thunk [fun times warmup]
   (let [[mean iqr-low iqr-high stddev] (native/nstime-function fun (fn []) times warmup)]
     {:mean mean
@@ -31,9 +28,9 @@
 (defmacro elapsed
   ``Macro that evaluates `form` and prints the execution time.
 
-    When repeated evaluations are run using the `:times` argument
-    this macro prints the mean, standard deviation, and inter-quartile
-    range of the samples.
+    Repeated evaluations are run using the `:times` argument. When
+    `:times > 1`, this macro prints the mean, standard deviation, and
+    inter-quartile range of the samples.
 
     Optional arguments:
     - :times -- Number of times to evaluate `form`
@@ -44,7 +41,7 @@
   (default times '1)
   (default warmup '1)
   (def $res (gensym))
-  ~(let [,$res (,time-thunk (,thunk ,form) ,times ,warmup)]
+  ~(let [,$res (,time-thunk (fn [] ,form) ,times ,warmup)]
      (when (neg? (,$res :mean))
        (eprint "Warning: overhead execution greater than benchmark. Try increasing :times argument."))
      (print (,process-result ,$res))))
